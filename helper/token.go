@@ -8,6 +8,7 @@ import (
 
 type TokenUseCaseInterface interface {
 	GeneratedToken(claims CustomClaims) (string, error)
+	DecodeToken(tokenString string) (*jwt.Token, error)
 }
 
 type TokenUseCaseImpl struct{}

@@ -36,3 +36,11 @@ func (uR *UserRepo) GetEmail(email string) (domain.User, error) {
 	}
 	return user, nil
 }
+
+func (uR *UserRepo) GetID(id int) (domain.User, error) {
+	var user domain.User
+	if err := uR.DB.Joins("Orders").Find(&user, "user_id = ?", id).Error; err != nil {
+		return domain.User{}, errors.New("user not found")
+	}
+	return user, nil
+}

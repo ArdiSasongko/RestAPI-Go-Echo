@@ -58,3 +58,20 @@ func (uC *UserController) Login(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Login Success", userLogin))
 }
+
+func (uC *UserController) GetId(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	token, errToken := helper.ValidToken(authHeader)
+
+	if errToken != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errToken.Error(), nil))
+	}
+
+	getUser, errUser := uC.Service.GetID(token)
+
+	if errUser != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errUser.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "User Detail", getUser))
+}

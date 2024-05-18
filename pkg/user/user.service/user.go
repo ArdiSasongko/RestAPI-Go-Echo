@@ -3,6 +3,7 @@ package userservice
 import (
 	"errors"
 	"first-project/db/model/domain"
+	"first-project/db/model/entity"
 	"first-project/db/model/web"
 	"first-project/helper"
 	userrepository "first-project/pkg/user/user.repository"
@@ -89,4 +90,20 @@ func (uS *UserService) Login(email, password string) (helper.CustomResponse, err
 	}
 
 	return data, nil
+}
+
+func (uS *UserService) GetID(token string) (entity.UserHistoryEntity, error) {
+	tokenV, errToken := uS.Token.DecodeToken(token)
+	if errToken != nil {
+		return entity.UserHistoryEntity{}, errToken
+	}
+
+	claims, _ := tokenV.Claims.(*helper.CustomClaims)
+	user, errUser := uS.Repo.GetID(claims.UserID)
+
+	if errUser != nil {
+		return entity.UserHistoryEntity{}, nil
+	}
+
+	return entity.ToUserHistoryEntity(user), nil
 }
