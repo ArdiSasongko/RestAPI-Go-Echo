@@ -6,6 +6,8 @@ import (
 	bicyclecontroller "first-project/pkg/bicycle/bicycle.controller"
 	bicyclerepository "first-project/pkg/bicycle/bicycle.repository"
 	bicycleservice "first-project/pkg/bicycle/bicycle.service"
+	orderrepository "first-project/pkg/order/order.repository"
+	orderservice "first-project/pkg/order/order.service"
 	usercontroller "first-project/pkg/user/user.controller"
 	userrepository "first-project/pkg/user/user.repository"
 	userservice "first-project/pkg/user/user.service"
@@ -34,7 +36,6 @@ func main() {
 	}
 	DB := connection.DBConn()
 	token := helper.NewTokenUseCase()
-
 	// user
 	userRepo := userrepository.NewUserRepo(DB)
 	userService := userservice.NewUserService(userRepo, token)
@@ -43,7 +44,10 @@ func main() {
 	// bicycle
 	bicycleRepo := bicyclerepository.NewBicycleRepo(DB)
 	bicycleService := bicycleservice.NewBicycleService(bicycleRepo)
-	bicycleController := bicyclecontroller.NewBicycleController(bicycleService)
+	// order
+	orderRepo := orderrepository.NewOrderRepo(DB)
+	orderService := orderservice.NewOrderService(orderRepo, token, bicycleRepo)
+	bicycleController := bicyclecontroller.NewBicycleController(bicycleService, orderService)
 
 	server := echo.New()
 	server.Validator = &CustomValidator{validator: validator.New()}
@@ -57,6 +61,9 @@ func main() {
 
 	// router bicycle
 	server.POST("/bicycle/created", bicycleController.Create)
+	server.GET("/bicycle/:id", bicycleController.GetBicycle, JWTProtect())
+	server.POST("/bicycle/:id/buy", bicycleController.BuyBicycle, JWTProtect())
+	server.GET("/bicycles", bicycleController.GetBicycles, JWTProtect())
 	// start
 	server.Logger.Fatal(server.Start(":8080"))
 }

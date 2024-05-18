@@ -4,18 +4,22 @@ import (
 	"first-project/db/model/web"
 	"first-project/helper"
 	bicycleservice "first-project/pkg/bicycle/bicycle.service"
+	orderservice "first-project/pkg/order/order.service"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
 type BicycleController struct {
-	Service bicycleservice.BicycleServiceInterface
+	Service      bicycleservice.BicycleServiceInterface
+	orderService orderservice.OrderServiceInterface
 }
 
-func NewBicycleController(service bicycleservice.BicycleServiceInterface) *BicycleController {
+func NewBicycleController(service bicycleservice.BicycleServiceInterface, order orderservice.OrderServiceInterface) *BicycleController {
 	return &BicycleController{
-		Service: service,
+		Service:      service,
+		orderService: order,
 	}
 }
 
@@ -37,4 +41,52 @@ func (bC *BicycleController) Create(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, helper.ResponseClient(http.StatusCreated, "Success Created Bicycle", saveBicycle))
+}
+
+func (bC *BicycleController) GetBicycle(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	data, errData := bC.Service.GetBicycle(id)
+
+	if errData != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errData.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Bicycle Found", data))
+}
+
+func (bC *BicycleController) GetBicycles(c echo.Context) error {
+	data, errData := bC.Service.GetBicycles()
+
+	if errData != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errData.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Bicycle Found", data))
+}
+
+func (bC *BicycleController) BuyBicycle(c echo.Context) error {
+	newOrder := new(web.OrderReq)
+	id, _ := strconv.Atoi(c.Param("id"))
+	authHeader := c.Request().Header.Get("Authorization")
+	token, errToken := helper.ValidToken(authHeader)
+
+	if errToken != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errToken.Error(), nil))
+	}
+
+	if err := c.Bind(newOrder); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, err.Error(), nil))
+	}
+
+	if err := c.Validate(newOrder); err != nil {
+		return err
+	}
+
+	createOrder, errOrder := bC.orderService.Create(token, id, *newOrder)
+
+	if errOrder != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errOrder.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Success Buy Bicycle", createOrder))
 }

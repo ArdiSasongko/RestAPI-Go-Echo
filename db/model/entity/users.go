@@ -41,7 +41,7 @@ func ToUserHistoryEntity(user domain.User) UserHistoryEntity {
 		UserID: user.UserID,
 		Name:   user.Name,
 		Email:  user.Email,
-		Orders: "Never Made an Order",
+		Orders: "never made an order",
 	}
 }
 
