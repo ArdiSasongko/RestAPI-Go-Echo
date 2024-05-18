@@ -3,6 +3,9 @@ package main
 import (
 	"first-project/db/connection"
 	"first-project/helper"
+	bicyclecontroller "first-project/pkg/bicycle/bicycle.controller"
+	bicyclerepository "first-project/pkg/bicycle/bicycle.repository"
+	bicycleservice "first-project/pkg/bicycle/bicycle.service"
 	usercontroller "first-project/pkg/user/user.controller"
 	userrepository "first-project/pkg/user/user.repository"
 	userservice "first-project/pkg/user/user.service"
@@ -32,18 +35,28 @@ func main() {
 	DB := connection.DBConn()
 	token := helper.NewTokenUseCase()
 
+	// user
 	userRepo := userrepository.NewUserRepo(DB)
 	userService := userservice.NewUserService(userRepo, token)
 	userController := usercontroller.NewUserController(userService)
+
+	// bicycle
+	bicycleRepo := bicyclerepository.NewBicycleRepo(DB)
+	bicycleService := bicycleservice.NewBicycleService(bicycleRepo)
+	bicycleController := bicyclecontroller.NewBicycleController(bicycleService)
 
 	server := echo.New()
 	server.Validator = &CustomValidator{validator: validator.New()}
 	server.HTTPErrorHandler = helper.ValidateBind
 
-	// router
-	server.POST("/register", userController.Create)
-	server.POST("/login", userController.Login)
-	server.GET("/history", userController.GetId, JWTProtect())
+	apiV1 := server.Group("api/v1/user")
+	// router user
+	apiV1.POST("/register", userController.Create)
+	apiV1.POST("/login", userController.Login)
+	apiV1.GET("/history", userController.GetId, JWTProtect())
+
+	// router bicycle
+	server.POST("/bicycle/created", bicycleController.Create)
 	// start
 	server.Logger.Fatal(server.Start(":8080"))
 }
