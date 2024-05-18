@@ -26,9 +26,10 @@ func main() {
 		log.Fatal("error loading .env file")
 	}
 	DB := connection.DBConn()
+	token := helper.NewTokenUseCase()
 
 	userRepo := userrepository.NewUserRepo(DB)
-	userService := userservice.NewUserService(userRepo)
+	userService := userservice.NewUserService(userRepo, token)
 	userController := usercontroller.NewUserController(userService)
 
 	server := echo.New()
@@ -37,7 +38,7 @@ func main() {
 
 	// router
 	server.POST("/register", userController.Create)
-
+	server.POST("/login", userController.Login)
 	// start
 	server.Logger.Fatal(server.Start(":8080"))
 }

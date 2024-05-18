@@ -38,3 +38,23 @@ func (uC *UserController) Create(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, helper.ResponseClient(http.StatusCreated, "Success Created User", saveUser))
 }
+
+func (uC *UserController) Login(c echo.Context) error {
+	loginUser := new(web.UserLoginReq)
+
+	if err := c.Bind(loginUser); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, err.Error(), nil))
+	}
+
+	if err := c.Validate(loginUser); err != nil {
+		return err
+	}
+
+	userLogin, errLogin := uC.Service.Login(loginUser.Email, loginUser.Password)
+
+	if errLogin != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errLogin.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Login Success", userLogin))
+}

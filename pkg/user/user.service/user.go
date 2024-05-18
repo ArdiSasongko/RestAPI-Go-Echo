@@ -1,21 +1,27 @@
 package userservice
 
 import (
+	"errors"
 	"first-project/db/model/domain"
 	"first-project/db/model/web"
 	"first-project/helper"
 	userrepository "first-project/pkg/user/user.repository"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
-	Repo userrepository.UserRepoInterface
+	Repo  userrepository.UserRepoInterface
+	Token helper.TokenUseCaseInterface
 }
 
-func NewUserService(repo userrepository.UserRepoInterface) *UserService {
+func NewUserService(repo userrepository.UserRepoInterface, token helper.TokenUseCaseInterface) *UserService {
 	return &UserService{
-		Repo: repo,
+		Repo:  repo,
+		Token: token,
 	}
 }
 
@@ -46,4 +52,41 @@ func (uS *UserService) Create(req web.UserReq) (helper.CustomResponse, error) {
 	}
 
 	return dataUser, nil
+}
+
+func (uS *UserService) Login(email, password string) (helper.CustomResponse, error) {
+	user, errUser := uS.Repo.GetEmail(email)
+
+	if errUser != nil {
+		return nil, errUser
+	}
+
+	if errPass := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); errPass != nil {
+		return nil, errors.New("password invalid")
+	}
+
+	expiredTime := time.Now().Local().Add(5 * time.Minute)
+
+	claims := helper.CustomClaims{
+		UserID: user.UserID,
+		Name:   user.Name,
+		Email:  user.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "Echo",
+			ExpiresAt: jwt.NewNumericDate(expiredTime),
+		},
+	}
+
+	token, errToken := uS.Token.GeneratedToken(claims)
+
+	if errToken != nil {
+		return nil, errToken
+	}
+
+	data := helper.CustomResponse{
+		"token":     token,
+		"expiredAt": expiredTime,
+	}
+
+	return data, nil
 }
