@@ -5,6 +5,7 @@ import (
 	"first-project/helper"
 	userservice "first-project/pkg/user/user.service"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -74,4 +75,29 @@ func (uC *UserController) GetId(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "User Detail", getUser))
+}
+
+func (uC *UserController) Update(c echo.Context) error {
+	updateUser := new(web.UserUpdateReq)
+	id, errId := strconv.Atoi(c.Param("id"))
+
+	if errId != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errId.Error(), nil))
+	}
+
+	if err := c.Bind(updateUser); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, err.Error(), nil))
+	}
+
+	if err := c.Validate(updateUser); err != nil {
+		return err
+	}
+
+	saveUpdate, errUpdate := uC.Service.Update(id, *updateUser)
+
+	if errUpdate != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errUpdate.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Success Update", saveUpdate))
 }

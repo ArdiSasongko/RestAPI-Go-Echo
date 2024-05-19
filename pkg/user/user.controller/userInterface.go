@@ -6,4 +6,5 @@ type UserControllerInterface interface {
 	Create(c echo.Context) error
 	Login(c echo.Context) error
 	GetId(c echo.Context) error
+	Update(c echo.Context) error
 }

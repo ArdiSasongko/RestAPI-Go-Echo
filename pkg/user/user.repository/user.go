@@ -44,3 +44,14 @@ func (uR *UserRepo) GetID(id int) (domain.User, error) {
 	}
 	return user, nil
 }
+
+func (uR *UserRepo) Update(user domain.User) (domain.User, error) {
+	if err := uR.DB.Model(domain.User{}).Where("user_id = ?", user.UserID).Updates(user).Error; err != nil {
+		if strings.Contains(err.Error(), "duplicate key value") {
+			return domain.User{}, errors.New("email already exists")
+		}
+		return domain.User{}, err
+	}
+
+	return user, nil
+}

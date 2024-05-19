@@ -107,3 +107,48 @@ func (uS *UserService) GetID(token string) (entity.UserHistoryEntity, error) {
 
 	return entity.ToUserHistoryEntity(user), nil
 }
+
+func (uS *UserService) Update(id int, req web.UserUpdateReq) (helper.CustomResponse, error) {
+	userId, errId := uS.Repo.GetID(id)
+
+	if errId != nil {
+		return nil, errId
+	}
+
+	// hash password if req is not empty
+	var hashPass string
+	if req.Password != "" {
+		hashPassByte, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MinCost)
+		if err != nil {
+			return nil, err
+		}
+		hashPass = string(hashPassByte)
+	} else {
+		hashPass = userId.Password
+	}
+
+	req.Name = helper.DefaultEmpty(req.Name, userId.Name).(string)
+	req.Email = helper.DefaultEmpty(req.Email, userId.Email).(string)
+	req.Password = hashPass
+
+	dataUpdate := domain.User{
+		UserID:   id,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	updateUser, errUpdate := uS.Repo.Update(dataUpdate)
+
+	if errUpdate != nil {
+		return nil, errUpdate
+	}
+
+	data := helper.CustomResponse{
+		"name":     updateUser.Name,
+		"email":    updateUser.Email,
+		"password": updateUser.Password,
+	}
+
+	return data, nil
+}
