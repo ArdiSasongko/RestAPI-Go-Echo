@@ -11,4 +11,5 @@ type UserServiceInterface interface {
 	Login(email, password string) (helper.CustomResponse, error)
 	GetID(id int) (entity.UserHistoryEntity, error)
 	Update(id int, req web.UserUpdateReq) (helper.CustomResponse, error)
+	Delete(id int) error
 }

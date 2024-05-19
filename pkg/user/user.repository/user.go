@@ -55,3 +55,10 @@ func (uR *UserRepo) Update(user domain.User) (domain.User, error) {
 
 	return user, nil
 }
+
+func (uR *UserRepo) Delete(id int) error {
+	if err := uR.DB.Where("user_id = ?", id).Delete(&domain.User{}).Error; err != nil {
+		return err
+	}
+	return nil
+}

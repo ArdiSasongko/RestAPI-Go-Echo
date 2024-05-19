@@ -105,3 +105,17 @@ func (uC *UserController) Update(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Success Update", saveUpdate))
 }
+
+func (uC *UserController) Delete(c echo.Context) error {
+	id, errId := strconv.Atoi(c.Param("id"))
+
+	if errId != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errId.Error(), nil))
+	}
+
+	if errDelete := uC.Service.Delete(id); errDelete != nil {
+		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errDelete.Error(), nil))
+	}
+
+	return c.JSON(http.StatusOK, helper.ResponseClient(http.StatusOK, "Success Delete", nil))
+}

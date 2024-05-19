@@ -7,4 +7,5 @@ type UserControllerInterface interface {
 	Login(c echo.Context) error
 	GetId(c echo.Context) error
 	Update(c echo.Context) error
+	Delete(c echo.Context) error
 }

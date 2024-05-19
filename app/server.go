@@ -38,7 +38,8 @@ func InitialServer(userController usercontroller.UserControllerInterface, bicycl
 	apiV1.POST("/register", userController.Create)
 	apiV1.POST("/login", userController.Login)
 	apiV1.GET("/history", userController.GetId, JWTProtect())
-	apiV1.POST("/:id/update", userController.Update, JWTProtect(), AccessUser())
+	apiV1.PUT("/:id/update", userController.Update, JWTProtect(), AccessUser())
+	apiV1.DELETE("/:id/delete", userController.Delete, JWTProtect(), AccessUser())
 
 	// router bicycle
 	server.POST("/bicycle/created", bicycleController.Create)

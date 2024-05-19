@@ -152,3 +152,19 @@ func (uS *UserService) Update(id int, req web.UserUpdateReq) (helper.CustomRespo
 
 	return data, nil
 }
+
+func (uS *UserService) Delete(id int) error {
+	_, errUser := uS.Repo.GetID(id)
+
+	if errUser != nil {
+		return errUser
+	}
+
+	errDelete := uS.Repo.Delete(id)
+
+	if errDelete != nil {
+		return errDelete
+	}
+
+	return nil
+}
