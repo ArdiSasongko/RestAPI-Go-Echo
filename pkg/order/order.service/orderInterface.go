@@ -6,5 +6,5 @@ import (
 )
 
 type OrderServiceInterface interface {
-	Create(token string, id int, req web.OrderReq) (helper.CustomResponse, error)
+	Create(userId int, id int, req web.OrderReq) (helper.CustomResponse, error)
 }
