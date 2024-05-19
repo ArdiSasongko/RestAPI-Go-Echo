@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -67,12 +68,14 @@ func (bC *BicycleController) GetBicycles(c echo.Context) error {
 func (bC *BicycleController) BuyBicycle(c echo.Context) error {
 	newOrder := new(web.OrderReq)
 	id, _ := strconv.Atoi(c.Param("id"))
-	authHeader := c.Request().Header.Get("Authorization")
-	token, errToken := helper.ValidToken(authHeader)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// token, errToken := helper.ValidToken(authHeader)
 
-	if errToken != nil {
-		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errToken.Error(), nil))
-	}
+	// if errToken != nil {
+	// 	return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errToken.Error(), nil))
+	// }
+	userId := c.Get("user").(*jwt.Token)
+	claims, _ := userId.Claims.(*helper.CustomClaims)
 
 	if err := c.Bind(newOrder); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, err.Error(), nil))
@@ -82,7 +85,7 @@ func (bC *BicycleController) BuyBicycle(c echo.Context) error {
 		return err
 	}
 
-	createOrder, errOrder := bC.orderService.Create(token, id, *newOrder)
+	createOrder, errOrder := bC.orderService.Create(claims.UserID, id, *newOrder)
 
 	if errOrder != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errOrder.Error(), nil))

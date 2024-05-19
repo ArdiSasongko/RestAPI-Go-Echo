@@ -23,12 +23,12 @@ func NewOrderService(repo orderrepository.OrderRepositoryInterface, token helper
 	}
 }
 
-func (oS *OrderService) Create(token string, id int, req web.OrderReq) (helper.CustomResponse, error) {
-	tokenV, errToken := oS.Token.DecodeToken(token)
-	if errToken != nil {
-		return nil, errToken
-	}
-	claims, _ := tokenV.Claims.(*helper.CustomClaims)
+func (oS *OrderService) Create(userId int, id int, req web.OrderReq) (helper.CustomResponse, error) {
+	// tokenV, errToken := oS.Token.DecodeToken(token)
+	// if errToken != nil {
+	// 	return nil, errToken
+	// }
+	// claims, _ := tokenV.Claims.(*helper.CustomClaims)
 
 	bicycle, errBicycle := oS.BicycleRepo.GetBicycle(id)
 
@@ -43,7 +43,7 @@ func (oS *OrderService) Create(token string, id int, req web.OrderReq) (helper.C
 	}
 
 	newOrder := domain.Orders{
-		UserIDFK:    claims.UserID,
+		UserIDFK:    userId,
 		BicycleIDFK: id,
 		Quantity:    req.Quantity,
 		TotalPrice:  totalPrice,
