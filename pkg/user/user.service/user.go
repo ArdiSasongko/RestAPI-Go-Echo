@@ -92,14 +92,14 @@ func (uS *UserService) Login(email, password string) (helper.CustomResponse, err
 	return data, nil
 }
 
-func (uS *UserService) GetID(token string) (entity.UserHistoryEntity, error) {
-	tokenV, errToken := uS.Token.DecodeToken(token)
-	if errToken != nil {
-		return entity.UserHistoryEntity{}, errToken
-	}
+func (uS *UserService) GetID(id int) (entity.UserHistoryEntity, error) {
+	// tokenV, errToken := uS.Token.DecodeToken(token)
+	// if errToken != nil {
+	// 	return entity.UserHistoryEntity{}, errToken
+	// }
 
-	claims, _ := tokenV.Claims.(*helper.CustomClaims)
-	user, errUser := uS.Repo.GetID(claims.UserID)
+	// claims, _ := tokenV.Claims.(*helper.CustomClaims)
+	user, errUser := uS.Repo.GetID(id)
 
 	if errUser != nil {
 		return entity.UserHistoryEntity{}, nil

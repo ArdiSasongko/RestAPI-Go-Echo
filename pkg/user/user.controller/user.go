@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -61,14 +62,17 @@ func (uC *UserController) Login(c echo.Context) error {
 }
 
 func (uC *UserController) GetId(c echo.Context) error {
-	authHeader := c.Request().Header.Get("Authorization")
-	token, errToken := helper.ValidToken(authHeader)
+	// authHeader := c.Request().Header.Get("Authorization")
+	// token, errToken := helper.ValidToken(authHeader)
 
-	if errToken != nil {
-		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errToken.Error(), nil))
-	}
+	// if errToken != nil {
+	// 	return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errToken.Error(), nil))
+	// }
 
-	getUser, errUser := uC.Service.GetID(token)
+	userToken := c.Get("user").(*jwt.Token)
+	claims, _ := userToken.Claims.(*helper.CustomClaims)
+
+	getUser, errUser := uC.Service.GetID(claims.UserID)
 
 	if errUser != nil {
 		return c.JSON(http.StatusBadRequest, helper.ResponseClient(http.StatusBadRequest, errUser.Error(), nil))
